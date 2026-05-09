@@ -1,8 +1,9 @@
 --[[ 
-    T-90MMS MOBILE ELITE v5.0 - NOIR MOD MENU
-    - Sürüklenebilir Menü
-    - Team-Check Aimbot (FOV)
-    - Fly & Noclip & ESP
+    T-90MMS ELITE V7 (GLOBAL MOBILE VERSION)
+    - Full English Interface for 100% Compatibility
+    - Enhanced Highlight ESP
+    - Team-Check Aimbot (FOV Based)
+    - Smooth Fly & Noclip
 --]]
 
 local Players = game:GetService("Players")
@@ -11,108 +12,110 @@ local UIS = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
---// AYARLAR
-local _G_DATA = {
-    Aim = false,
-    Fly = false,
-    Noclip = false,
-    Esp = false,
-    Radius = 120, -- Aimbot halka genişliği
-    FlySpeed = 50
+--// SYSTEM SETTINGS
+local T90_Config = {
+    AimActive = false,
+    FlyActive = false,
+    NoclipActive = false,
+    EspActive = false,
+    
+    FOV_Radius = 140,
+    FlySpeed = 60,
+    AimSmoothing = 0.18 -- Lower = Smoother
 }
 
---// UI OLUŞTURMA
+--// UI GENERATION (Noir Aesthetic)
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "T90_Elite_Mobile"
+ScreenGui.Name = "T90_Global_Pro"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
 
--- Menü Açma Butonu (Yüzen Buton)
-local OpenBtn = Instance.new("TextButton", ScreenGui)
-OpenBtn.Size = UDim2.new(0, 60, 0, 60)
-OpenBtn.Position = UDim2.new(0, 10, 0.4, 0)
-OpenBtn.BackgroundColor3 = Color3.new(0,0,0)
-OpenBtn.BorderSizePixel = 2
-OpenBtn.BorderColor3 = Color3.new(1,1,1)
-OpenBtn.Text = "T90"
-OpenBtn.TextColor3 = Color3.new(1,1,1)
-OpenBtn.Font = Enum.Font.Code
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
+-- Floating Open Button
+local MenuBtn = Instance.new("TextButton", ScreenGui)
+MenuBtn.Size = UDim2.new(0, 65, 0, 65)
+MenuBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
+MenuBtn.BackgroundColor3 = Color3.new(0, 0, 0)
+MenuBtn.Text = "T90"
+MenuBtn.TextColor3 = Color3.new(1, 1, 1)
+MenuBtn.Font = Enum.Font.GothamBold
+MenuBtn.TextSize = 18
+Instance.new("UICorner", MenuBtn).CornerRadius = UDim.new(1, 0)
+local Stroke = Instance.new("UIStroke", MenuBtn)
+Stroke.Color = Color3.new(1, 1, 1)
+Stroke.Thickness = 2
 
--- Ana Menü
+-- Main Dashboard
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 240, 0, 280)
-MainFrame.Position = UDim2.new(0.5, -120, 0.5, -140)
-MainFrame.BackgroundColor3 = Color3.new(0,0,0)
-MainFrame.BackgroundTransparency = 0.1
-MainFrame.BorderSizePixel = 1
-MainFrame.BorderColor3 = Color3.new(1,1,1)
+MainFrame.Size = UDim2.new(0, 260, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -160)
+MainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+MainFrame.BackgroundTransparency = 0.15
 MainFrame.Visible = false
 Instance.new("UICorner", MainFrame)
 
--- Menü Başlığı (Sürükleme Alanı)
-local Header = Instance.new("Frame", MainFrame)
-Header.Size = UDim2.new(1, 0, 0, 40)
-Header.BackgroundTransparency = 1
+-- Drag Area
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.BackgroundTransparency = 1
 
-local Title = Instance.new("TextLabel", Header)
+local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, 0, 1, 0)
-Title.Text = "T-90MMS MOBILE ELITE"
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Font = Enum.Font.Code
-Title.TextSize = 16
+Title.Text = "T-90MMS GLOBAL v7"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 15
 
-local CloseBtn = Instance.new("TextButton", MainFrame)
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(0.85, 0, 0.02, 0)
-CloseBtn.BackgroundColor3 = Color3.new(0,0,0)
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-CloseBtn.Text = "X"
-CloseBtn.BorderSizePixel = 1
-CloseBtn.BorderColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", CloseBtn)
+local ExitBtn = Instance.new("TextButton", MainFrame)
+ExitBtn.Size = UDim2.new(0, 35, 0, 35)
+ExitBtn.Position = UDim2.new(0.85, 0, 0.02, 0)
+ExitBtn.Text = "X"
+ExitBtn.BackgroundColor3 = Color3.new(1, 1, 1)
+ExitBtn.TextColor3 = Color3.new(0, 0, 0)
+Instance.new("UICorner", ExitBtn)
 
--- FOV Halkası (Görsel)
-local FOVCircle = Instance.new("Frame", ScreenGui)
-FOVCircle.Size = UDim2.new(0, _G_DATA.Radius * 2, 0, _G_DATA.Radius * 2)
-FOVCircle.Position = UDim2.new(0.5, -_G_DATA.Radius, 0.5, -_G_DATA.Radius)
-FOVCircle.BackgroundTransparency = 1
-FOVCircle.Visible = false
-local CircleOutline = Instance.new("UIStroke", FOVCircle)
-CircleOutline.Color = Color3.new(1,1,1)
-CircleOutline.Thickness = 1
-Instance.new("UICorner", FOVCircle).CornerRadius = UDim.new(1,0)
+-- FOV Circle Visual
+local FOVFrame = Instance.new("Frame", ScreenGui)
+FOVFrame.Size = UDim2.new(0, T90_Config.FOV_Radius * 2, 0, T90_Config.FOV_Radius * 2)
+FOVFrame.Position = UDim2.new(0.5, -T90_Config.FOV_Radius, 0.5, -T90_Config.FOV_Radius)
+FOVFrame.BackgroundTransparency = 1
+FOVFrame.Visible = false
+local Circle = Instance.new("UICorner", FOVFrame)
+Circle.CornerRadius = UDim.new(1, 0)
+local CircleStroke = Instance.new("UIStroke", FOVFrame)
+CircleStroke.Color = Color3.new(1, 1, 1)
+CircleStroke.Thickness = 1
 
---// SÜRÜKLENEBİLİR UI MANTIĞI
+--// MOBILE DRAG LOGIC
 local dragging, dragInput, dragStart, startPos
-Header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
     end
 end)
 UIS.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
 end)
 
---// BUTON ÜRETİCİ
-local function CreateButton(name, pos, callback)
+--// COMPONENT BUILDER
+local function NewButton(text, pos, callback)
     local btn = Instance.new("TextButton", MainFrame)
-    btn.Size = UDim2.new(0.8, 0, 0, 40)
-    btn.Position = UDim2.new(0.1, 0, 0, pos)
-    btn.BackgroundColor3 = Color3.new(0,0,0)
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Text = name .. ": OFF"
-    btn.BorderSizePixel = 1
-    btn.BorderColor3 = Color3.new(0.3,0.3,0.3)
+    btn.Size = UDim2.new(0.85, 0, 0, 45)
+    btn.Position = UDim2.new(0.075, 0, 0, pos)
+    btn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Text = text .. ": OFF"
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
     Instance.new("UICorner", btn)
 
     btn.MouseButton1Click:Connect(function()
@@ -120,68 +123,95 @@ local function CreateButton(name, pos, callback)
     end)
 end
 
---// ÖZELLİK KONTROLLERİ
-CreateButton("AIMBOT", 50, function(b)
-    _G_DATA.Aim = not _G_DATA.Aim
-    b.Text = _G_DATA.Aim and "AIMBOT: ON" or "AIMBOT: OFF"
-    b.TextColor3 = _G_DATA.Aim and Color3.new(0,1,0) or Color3.new(1,1,1)
-    FOVCircle.Visible = _G_DATA.Aim
+--// FEATURE CONTROLS
+NewButton("AIM ASSIST", 60, function(b)
+    T90_Config.AimActive = not T90_Config.AimActive
+    b.Text = T90_Config.AimActive and "AIM ASSIST: ON" or "AIM ASSIST: OFF"
+    b.BackgroundColor3 = T90_Config.AimActive and Color3.new(1,1,1) or Color3.new(0.1,0.1,0.1)
+    b.TextColor3 = T90_Config.AimActive and Color3.new(0,0,0) or Color3.new(1,1,1)
+    FOVFrame.Visible = T90_Config.AimActive
 end)
 
-CreateButton("FLY", 100, function(b)
-    _G_DATA.Fly = not _G_DATA.Fly
-    b.Text = _G_DATA.Fly and "FLY: ON" or "FLY: OFF"
-    b.TextColor3 = _G_DATA.Fly and Color3.new(0,1,0) or Color3.new(1,1,1)
+NewButton("FLIGHT MODE", 120, function(b)
+    T90_Config.FlyActive = not T90_Config.FlyActive
+    b.Text = T90_Config.FlyActive and "FLIGHT: ON" or "FLIGHT: OFF"
 end)
 
-CreateButton("NOCLIP", 150, function(b)
-    _G_DATA.Noclip = not _G_DATA.Noclip
-    b.Text = _G_DATA.Noclip and "NOCLIP: ON" or "NOCLIP: OFF"
-    b.TextColor3 = _G_DATA.Noclip and Color3.new(0,1,0) or Color3.new(1,1,1)
+NewButton("NOCLIP", 180, function(b)
+    T90_Config.NoclipActive = not T90_Config.NoclipActive
+    b.Text = T90_Config.NoclipActive and "NOCLIP: ON" or "NOCLIP: OFF"
 end)
 
-CreateButton("ESP", 200, function(b)
-    _G_DATA.Esp = not _G_DATA.Esp
-    b.Text = _G_DATA.Esp and "ESP: ON" or "ESP: OFF"
-    b.TextColor3 = _G_DATA.Esp and Color3.new(0,1,0) or Color3.new(1,1,1)
+NewButton("ULTRA ESP", 240, function(b)
+    T90_Config.EspActive = not T90_Config.EspActive
+    b.Text = T90_Config.EspActive and "ESP: ON" or "ESP: OFF"
 end)
 
-OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true OpenBtn.Visible = false end)
-CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false OpenBtn.Visible = true end)
+MenuBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true MenuBtn.Visible = false end)
+ExitBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false MenuBtn.Visible = true end)
 
---// MANTIK DÖNGÜSÜ
-local function GetTarget()
-    local closest = nil
-    local dist = _G_DATA.Radius
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Team ~= LocalPlayer.Team then
-            local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
-            if vis then
-                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if mag < dist then
-                    dist = mag
-                    closest = p.Character.Head
+--// LOGIC ENGINES
+local function GetBestEnemy()
+    local target = nil
+    local shortestDist = T90_Config.FOV_Radius
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            -- Team Check (English Logic)
+            if player.Team ~= LocalPlayer.Team or player.Team == nil then
+                local point, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
+                if onScreen then
+                    local magnitude = (Vector2.new(point.X, point.Y) - center).Magnitude
+                    if magnitude < shortestDist then
+                        shortestDist = magnitude
+                        target = player.Character.Head
+                    end
                 end
             end
         end
     end
-    return closest
+    return target
 end
 
+--// RUNTIME LOOPS
 RunService.RenderStepped:Connect(function()
-    if _G_DATA.Aim then
-        local t = GetTarget()
-        if t then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, t.Position), 0.15) end
+    -- Aim Engine
+    if T90_Config.AimActive then
+        local lockOn = GetBestEnemy()
+        if lockOn then
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, lockOn.Position), T90_Config.AimSmoothing)
+        end
     end
-    if _G_DATA.Fly and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Camera.CFrame.LookVector * _G_DATA.FlySpeed
+
+    -- Fly Engine
+    if T90_Config.FlyActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.Velocity = Camera.CFrame.LookVector * T90_Config.FlySpeed
+    end
+
+    -- ESP Engine (Modern Highlight)
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local highlight = p.Character:FindFirstChild("T90_ESP")
+            if T90_Config.EspActive and (p.Team ~= LocalPlayer.Team) then
+                if not highlight then
+                    highlight = Instance.new("Highlight", p.Character)
+                    highlight.Name = "T90_ESP"
+                    highlight.FillColor = Color3.new(1, 1, 1)
+                    highlight.OutlineColor = Color3.new(0, 0, 0)
+                    highlight.FillTransparency = 0.5
+                end
+            else
+                if highlight then highlight:Destroy() end
+            end
+        end
     end
 end)
 
 RunService.Stepped:Connect(function()
-    if _G_DATA.Noclip and LocalPlayer.Character then
-        for _, p in pairs(LocalPlayer.Character:GetDescendants()) do
-            if p:IsA("BasePart") then p.CanCollide = false end
+    if T90_Config.NoclipActive and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
         end
     end
 end)
