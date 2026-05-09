@@ -1,11 +1,11 @@
 --[[ 
-    NEXXZY ELITE v11.0 - STABLE MASTER
+    NEXXZY ELITE v11.1 - ULTIMATE TROLL & FIX
     Customized for: Umut
     -------------------------------------------
-    - CARPET FLY: True 3D movement (WASD)
-    - SMART TROLL GUI: Expandable Player Profiles
-    - FIXES: Aimbot sensitivity & Fling physics
-    - NO GHOST: Removed as requested
+    - SMOOTH CFRAME FLY: No more freezing (WASD/Mobile)
+    - STICKY AIMBOT: Better focus & tracking
+    - SMART TROLL PANEL: Expandable profiles with Animations
+    - NO GHOST: Removed for stability
     -------------------------------------------
 --]]
 
@@ -16,37 +16,37 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 local Nexxzy = {
-    Aim = false, Fly = false, FlySpeed = 50,
-    FOV = 150, Smooth = 0.1, SelectedPlayer = nil
+    Aim = false, Fly = false, FlySpeed = 2,
+    FOV = 180, Smooth = 0.25, SelectedPlayer = nil
 }
 
---// FLY SYSTEM (CARPET STYLE)
-local BodyGyro, BodyVel
+--// IMPROVED CFRAME FLY (CARPET STYLE)
 local function StartFly()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    BodyGyro = Instance.new("BodyGyro", char.HumanoidRootPart)
-    BodyGyro.P = 9e4
-    BodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    BodyGyro.CFrame = char.HumanoidRootPart.CFrame
-    
-    BodyVel = Instance.new("BodyVelocity", char.HumanoidRootPart)
-    BodyVel.Velocity = Vector3.new(0, 0.1, 0)
-    BodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    
-    char.Humanoid.PlatformStand = true
+    task.spawn(function()
+        local char = LocalPlayer.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        char.Humanoid.PlatformStand = true
+        
+        while Nexxzy.Fly do
+            local moveDir = Vector3.new(0, 0, 0)
+            if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - Camera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Camera.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0,1,0) end
+            if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0,1,0) end
+            
+            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + (moveDir * Nexxzy.FlySpeed)
+            char.HumanoidRootPart.Velocity = Vector3.new(0, 0.1, 0)
+            RunService.RenderStepped:Wait()
+        end
+        char.Humanoid.PlatformStand = false
+    end)
 end
 
-local function StopFly()
-    if BodyGyro then BodyGyro:Destroy() end
-    if BodyVel then BodyVel:Destroy() end
-    if LocalPlayer.Character then LocalPlayer.Character.Humanoid.PlatformStand = false end
-end
-
---// UI CORE
+--// UI CORE SETUP
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "Nexxzy_v11"
+ScreenGui.Name = "Nexxzy_v11_1"
 ScreenGui.ResetOnSpawn = false
 
 local MainToggle = Instance.new("TextButton", ScreenGui)
@@ -64,78 +64,95 @@ MainFrame.BackgroundColor3 = Color3.new(0,0,0)
 MainFrame.Visible = false
 Instance.new("UICorner", MainFrame)
 
--- Tab Headers
-local PlayerTab = Instance.new("ScrollingFrame", MainFrame)
-PlayerTab.Size = UDim2.new(1, -20, 1, -100)
-PlayerTab.Position = UDim2.new(0, 10, 0, 80)
-PlayerTab.BackgroundTransparency = 1
-Instance.new("UIListLayout", PlayerTab).Padding = UDim.new(0, 5)
+-- Tabs
+local PlayerPage = Instance.new("ScrollingFrame", MainFrame)
+PlayerPage.Size = UDim2.new(1, -20, 1, -100)
+PlayerPage.Position = UDim2.new(0, 10, 0, 90)
+PlayerPage.BackgroundTransparency = 1
+Instance.new("UIListLayout", PlayerPage).Padding = UDim.new(0, 5)
 
-local TrollTab = Instance.new("ScrollingFrame", MainFrame)
-TrollTab.Size = UDim2.new(1, -20, 1, -100)
-TrollTab.Position = UDim2.new(0, 10, 0, 80)
-TrollTab.BackgroundTransparency = 1
-TrollTab.Visible = false
-Instance.new("UIListLayout", TrollTab).Padding = UDim.new(0, 5)
+local TrollPage = Instance.new("ScrollingFrame", MainFrame)
+TrollPage.Size = UDim2.new(1, -20, 1, -100)
+TrollPage.Position = UDim2.new(0, 10, 0, 90)
+TrollPage.BackgroundTransparency = 1
+TrollPage.Visible = false
+Instance.new("UIListLayout", TrollPage).Padding = UDim.new(0, 5)
 
---// SMART TROLL PANEL (Expandable)
-local ProfilePanel = Instance.new("Frame", TrollTab)
-ProfilePanel.Size = UDim2.new(1, 0, 0, 140)
+--// SMART TROLL PANEL (Expandable UI)
+local ProfilePanel = Instance.new("Frame", TrollPage)
+ProfilePanel.Size = UDim2.new(1, 0, 0, 180) -- Larger for animations
 ProfilePanel.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
 ProfilePanel.Visible = false
 Instance.new("UICorner", ProfilePanel)
 
 local UserImg = Instance.new("ImageLabel", ProfilePanel)
-UserImg.Size = UDim2.new(0, 60, 0, 60)
-UserImg.Position = UDim2.new(0.5, -30, 0, 10)
+UserImg.Size = UDim2.new(0, 50, 0, 50)
+UserImg.Position = UDim2.new(0, 10, 0, 10)
 Instance.new("UICorner", UserImg).CornerRadius = UDim.new(1,0)
 
 local UserName = Instance.new("TextLabel", ProfilePanel)
-UserName.Size = UDim2.new(1, 0, 0, 20)
-UserName.Position = UDim2.new(0, 0, 0, 75)
+UserName.Size = UDim2.new(0, 200, 0, 20)
+UserName.Position = UDim2.new(0, 70, 0, 25)
 UserName.TextColor3 = Color3.new(1,1,1)
+UserName.TextXAlignment = Enum.TextXAlignment.Left
 UserName.BackgroundTransparency = 1
 
-local ActionContainer = Instance.new("Frame", ProfilePanel)
-ActionContainer.Size = UDim2.new(1, 0, 0, 40)
-ActionContainer.Position = UDim2.new(0, 0, 0, 100)
-ActionContainer.BackgroundTransparency = 1
-Instance.new("UIListLayout", ActionContainer).FillDirection = Enum.FillDirection.Horizontal
+local ActionGrid = Instance.new("Frame", ProfilePanel)
+ActionGrid.Size = UDim2.new(1, -20, 0, 100)
+ActionGrid.Position = UDim2.new(0, 10, 0, 70)
+ActionGrid.BackgroundTransparency = 1
+local grid = Instance.new("UIGridLayout", ActionGrid)
+grid.CellSize = UDim2.new(0, 135, 0, 30)
 
-local function CreateActionBtn(txt, parent, func)
-    local b = Instance.new("TextButton", parent)
-    b.Size = UDim2.new(0.5, 0, 1, 0)
+local function CreateAction(txt, func)
+    local b = Instance.new("TextButton", ActionGrid)
     b.Text = txt
     b.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
     b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(func)
 end
 
-CreateActionBtn("TP (GOTO)", ActionContainer, function()
+-- Troll Buttons
+CreateAction("TELEPORT", function()
     if Nexxzy.SelectedPlayer and Nexxzy.SelectedPlayer.Character then
         LocalPlayer.Character.HumanoidRootPart.CFrame = Nexxzy.SelectedPlayer.Character.HumanoidRootPart.CFrame
     end
 end)
 
-CreateActionBtn("BRING", ActionContainer, function()
+CreateAction("BRING", function()
     if Nexxzy.SelectedPlayer and Nexxzy.SelectedPlayer.Character then
         Nexxzy.SelectedPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
     end
 end)
 
---// LIST REFRESH
-local function UpdateTrollList()
-    for _, v in pairs(TrollTab:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+CreateAction("CRAWL (ANIM)", function() 
+    local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://282574440"
+    hum:LoadAnimation(anim):Play()
+end)
+
+CreateAction("GLITCH (ANIM)", function() 
+    local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://35154961"
+    hum:LoadAnimation(anim):Play()
+end)
+
+--// LIST LOGIC
+local function RefreshTroll()
+    for _, v in pairs(TrollPage:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer then
-            local b = Instance.new("TextButton", TrollTab)
+            local b = Instance.new("TextButton", TrollPage)
             b.Size = UDim2.new(1, 0, 0, 35)
             b.Text = p.Name
             b.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
             b.TextColor3 = Color3.new(1,1,1)
             b.MouseButton1Click:Connect(function()
                 Nexxzy.SelectedPlayer = p
-                UserName.Text = p.DisplayName
+                UserName.Text = p.DisplayName or p.Name
                 UserImg.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
                 ProfilePanel.Visible = true
             end)
@@ -143,7 +160,7 @@ local function UpdateTrollList()
     end
 end
 
---// PLAYER FEATURES
+--// PLAYER TAB FEATURES
 local function AddToggle(txt, parent, callback)
     local b = Instance.new("TextButton", parent)
     b.Size = UDim2.new(1, 0, 0, 40)
@@ -154,35 +171,24 @@ local function AddToggle(txt, parent, callback)
     b.MouseButton1Click:Connect(function() callback(b) end)
 end
 
-AddToggle("AIMBOT", PlayerTab, function(b)
+AddToggle("AIMBOT", PlayerPage, function(b)
     Nexxzy.Aim = not Nexxzy.Aim
     b.Text = Nexxzy.Aim and "AIMBOT: ON" or "AIMBOT: OFF"
 end)
 
-AddToggle("CARPET FLY", PlayerTab, function(b)
+AddToggle("FLY (CARPET)", PlayerPage, function(b)
     Nexxzy.Fly = not Nexxzy.Fly
     b.Text = Nexxzy.Fly and "FLY: ON" or "FLY: OFF"
-    if Nexxzy.Fly then StartFly() else StopFly() end
+    if Nexxzy.Fly then StartFly() end
 end)
 
---// RUNTIME (AIM & FLY CONTROL)
+--// STICKY AIMBOT LOGIC
 RunService.RenderStepped:Connect(function()
-    if Nexxzy.Fly and BodyVel and BodyGyro then
-        local moveDir = Vector3.new(0, 0, 0)
-        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - Camera.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Camera.CFrame.RightVector end
-        
-        BodyVel.Velocity = moveDir * Nexxzy.FlySpeed
-        BodyGyro.CFrame = Camera.CFrame
-    end
-    
     if Nexxzy.Aim then
         local target = nil
         local dist = Nexxzy.FOV
         for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Team ~= LocalPlayer.Team then
                 local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
                 if vis then
                     local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
@@ -197,6 +203,32 @@ RunService.RenderStepped:Connect(function()
             Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), Nexxzy.Smooth)
         end
     end
+end)
+
+-- Navigation Buttons
+local PlayerBtn = Instance.new("TextButton", MainFrame)
+PlayerBtn.Size = UDim2.new(0.5, 0, 0, 40)
+PlayerBtn.Position = UDim2.new(0, 0, 0, 40)
+PlayerBtn.Text = "PLAYER"
+PlayerBtn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+PlayerBtn.TextColor3 = Color3.new(1,1,1)
+
+local TrollBtn = Instance.new("TextButton", MainFrame)
+TrollBtn.Size = UDim2.new(0.5, 0, 0, 40)
+TrollBtn.Position = UDim2.new(0.5, 0, 0, 40)
+TrollBtn.Text = "TROLL"
+TrollBtn.BackgroundColor3 = Color3.new(0, 0, 0)
+TrollBtn.TextColor3 = Color3.new(0.5, 0.5, 0.5)
+
+PlayerBtn.MouseButton1Click:Connect(function()
+    PlayerPage.Visible = true; TrollPage.Visible = false
+    PlayerBtn.TextColor3 = Color3.new(1,1,1); TrollBtn.TextColor3 = Color3.new(0.5,0.5,0.5)
+end)
+
+TrollBtn.MouseButton1Click:Connect(function()
+    TrollPage.Visible = true; PlayerPage.Visible = false
+    TrollBtn.TextColor3 = Color3.new(1,1,1); PlayerBtn.TextColor3 = Color3.new(0.5,0.5,0.5)
+    RefreshTroll()
 end)
 
 MainToggle.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
