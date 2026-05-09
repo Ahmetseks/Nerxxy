@@ -1,180 +1,114 @@
 -- =============================================
--- Nexxzy034 Hub v1.5
--- Mobile Friendly + Minimize + Troll Section
+-- Nexxzy034 Hub v1.7 - Key System + Chilli Style
+-- Key: https://robloxscriptss.duckdns.org/key
 -- =============================================
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local Camera = Workspace.CurrentCamera
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ================== SETTINGS ==================
-local Settings = {
-    ESP = { Enabled = true, TeamCheck = true, Boxes = true, Names = true, Health = true, Tracers = true },
-    Aimbot = { Enabled = false, Smoothness = 7, FOV = 140 },
-    SilentAim = { Enabled = false },
-    GodMode = { Enabled = false },
-    Movement = { FlyEnabled = false, FlySpeed = 65, InfiniteJump = false },
-    AntiKick = { Enabled = true },
-    AntiLag = { Enabled = false },
-    Troll = { SevenDay7_Enabled = false }
-}
+-- ================== KEY SYSTEM ==================
+local CorrectKey = nil  -- Buraya doğrulama yapacağız
+local KeyVerified = false
 
--- Config
-local function SaveConfig() getgenv().Nexxzy034_Config = Settings; print("✅ Saved") end
-local function LoadConfig()
-    if getgenv().Nexxzy034_Config then Settings = getgenv().Nexxzy034_Config; print("✅ Loaded") end
+local function CheckKey(key)
+    if key == "" or not key then 
+        return false 
+    end
+    
+    -- Basit doğrulama (siteye göre değiştirebilirsin)
+    -- Eğer site API veriyorsa buraya GET isteği atabiliriz
+    print("🔑 Girilen Key:", key)
+    
+    -- Şimdilik basit kontrol (gerçek projede daha güvenli yöntem kullanılır)
+    if #key > 8 then  -- Örnek: Key en az 8 karakter olsun
+        KeyVerified = true
+        print("✅ Key Doğrulandı! Hub Açılıyor...")
+        return true
+    else
+        print("❌ Geçersiz Key!")
+        return false
+    end
 end
-LoadConfig()
 
--- ================== GUI (Önceki versiyonla aynı) ==================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Nexxzy034Hub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+-- ================== KEY UI (Giriş Ekranı) ==================
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "NexxzyKeySystem"
+KeyGui.ResetOnSpawn = false
+KeyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0.92, 0, 0.82, 0)
-MainFrame.Position = UDim2.new(0.04, 0, 0.09, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Size = UDim2.new(0, 420, 0, 280)
+KeyFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+KeyFrame.Parent = KeyGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 16)
+Corner.Parent = KeyFrame
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 65)
-Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.Size = UDim2.new(1, 0, 0, 70)
+Title.BackgroundTransparency = 1
 Title.Text = "Nexxzy034 Hub"
 Title.TextColor3 = Color3.fromRGB(0, 255, 200)
 Title.TextScaled = true
 Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
+Title.Parent = KeyFrame
 
--- Minimize & Close (önceki gibi)
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 50, 0, 50)
-MinimizeBtn.Position = UDim2.new(1, -55, 0, 8)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-MinimizeBtn.Text = "−"
-MinimizeBtn.TextScaled = true
-MinimizeBtn.Parent = MainFrame
+local Instruction = Instance.new("TextLabel")
+Instruction.Size = UDim2.new(1, 0, 0, 40)
+Instruction.Position = UDim2.new(0, 0, 0, 70)
+Instruction.BackgroundTransparency = 1
+Instruction.Text = "Key almak için:\nhttps://robloxscriptss.duckdns.org/key"
+Instruction.TextColor3 = Color3.fromRGB(200, 200, 200)
+Instruction.TextScaled = true
+Instruction.Font = Enum.Font.Gotham
+Instruction.Parent = KeyFrame
 
-local MiniIndicator = Instance.new("TextButton")
-MiniIndicator.Size = UDim2.new(0, 70, 0, 70)
-MiniIndicator.Position = UDim2.new(0, 20, 0.5, -35)
-MiniIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 180)
-MiniIndicator.Text = "N"
-MiniIndicator.TextScaled = true
-MiniIndicator.Visible = false
-MiniIndicator.Parent = ScreenGui
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(0.85, 0, 0, 50)
+KeyBox.Position = UDim2.new(0.075, 0, 0, 130)
+KeyBox.PlaceholderText = "Keyinizi buraya yapıştır..."
+KeyBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.TextScaled = true
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.Parent = KeyFrame
 
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 50, 0, 50)
-CloseBtn.Position = UDim2.new(1, -110, 0, 8)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Text = "✕"
-CloseBtn.TextScaled = true
-CloseBtn.Parent = MainFrame
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+local UICorner2 = Instance.new("UICorner", KeyBox)
 
--- Minimize Logic
-local isMinimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    MainFrame.Visible = not isMinimized
-    MiniIndicator.Visible = isMinimized
-end)
-MiniIndicator.MouseButton1Click:Connect(function()
-    isMinimized = false
-    MainFrame.Visible = true
-    MiniIndicator.Visible = false
-end)
+local VerifyBtn = Instance.new("TextButton")
+VerifyBtn.Size = UDim2.new(0.85, 0, 0, 55)
+VerifyBtn.Position = UDim2.new(0.075, 0, 0, 200)
+VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+VerifyBtn.Text = "Verify Key"
+VerifyBtn.TextColor3 = Color3.new(1,1,1)
+VerifyBtn.TextScaled = true
+VerifyBtn.Font = Enum.Font.GothamBold
+VerifyBtn.Parent = KeyFrame
 
--- ================== TAB SYSTEM ==================
-local TabBar = Instance.new("Frame")
-TabBar.Size = UDim2.new(1, 0, 0, 70)
-TabBar.Position = UDim2.new(0, 0, 0, 65)
-TabBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TabBar.Parent = MainFrame
+local BtnCorner = Instance.new("UICorner", VerifyBtn)
 
-local Content = Instance.new("ScrollingFrame")
-Content.Size = UDim2.new(1, 0, 1, -135)
-Content.Position = UDim2.new(0, 0, 0, 135)
-Content.BackgroundTransparency = 1
-Content.ScrollBarThickness = 10
-Content.Parent = MainFrame
-
-local UIList = Instance.new("UIListLayout")
-UIList.Padding = UDim.new(0, 10)
-UIList.SortOrder = Enum.SortOrder.LayoutOrder
-UIList.Parent = Content
-
--- Tablar
-local TrollTab = Instance.new("Frame")
-TrollTab.Size = UDim2.new(1,0,1,0)
-TrollTab.BackgroundTransparency = 1
-TrollTab.Visible = true
-TrollTab.Parent = Content
-
--- Diğer tablar istersen ekleriz
-
--- Tab butonları (basit)
-local TrollTabBtn = Instance.new("TextButton")
-TrollTabBtn.Size = UDim2.new(0.25,0,1,0)
-TrollTabBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-TrollTabBtn.Text = "Troll"
-TrollTabBtn.TextScaled = true
-TrollTabBtn.Parent = TabBar
-
--- ================== TROLL BÖLÜMÜ - 7DAY7 ==================
-local function AddTrollButton(text, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.95, 0, 0, 70)
-    btn.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
-    btn.Text = text
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamBold
-    btn.Parent = TrollTab
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- 7Day7 Animasyon Toggle
-AddTrollButton("7Day7 Troll Animations [ON/OFF]", function()
-    Settings.Troll.SevenDay7_Enabled = not Settings.Troll.SevenDay7_Enabled
-    
-    local character = LocalPlayer.Character
-    if not character or not character:FindFirstChild("Humanoid") then return end
-    
-    local humanoid = character.Humanoid
-    
-    if Settings.Troll.SevenDay7_Enabled then
-        -- 7Day7 tarzı troll yürüyüş + idle (popüler troll anim ID'leri)
-        -- Gerçek ID'leri buraya koy (senin bildiğin ID'leri yazabilirsin)
-        print("🟣 7Day7 Troll Animations AKTİF")
-        
-        -- Örnek: Yürüyüş animasyonu değiştir
-        pcall(function()
-            humanoid:LoadAnimation(game:GetObjects("rbxassetid://PASTE_WALK_ID_HERE")[1]):Play() -- Buraya gerçek ID koy
-        end)
+-- Verify Butonu
+VerifyBtn.MouseButton1Click:Connect(function()
+    local enteredKey = KeyBox.Text
+    if CheckKey(enteredKey) then
+        KeyGui:Destroy()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/.../main/hub.lua"))() -- Hub kodunu buraya koy
+        -- Veya direkt hub kodunu çalıştır
     else
-        print("🔴 7Day7 Troll Animations KAPALI")
-        -- Normal animasyona dön (reset)
-        humanoid:LoadAnimation(game:GetObjects("rbxassetid://0")[1]) -- Default
+        VerifyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        VerifyBtn.Text = "Geçersiz Key!"
+        wait(2)
+        VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+        VerifyBtn.Text = "Verify Key"
     end
 end)
 
-AddTrollButton("Reset All Animations", function()
-    Settings.Troll.SevenDay7_Enabled = false
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid:LoadAnimation(game:GetObjects("rbxassetid://0")[1]) -- Reset
-    end
-    print("Animations Reset")
-end)
-
-print("🚀 Nexxzy034 Hub v1.5 Yüklendi!")
-print("Troll sekmesine girdin → 7Day7 butonu var")
+print("🔐 Nexxzy034 Key System Yüklendi!")
+print("Key almak için: https://robloxscriptss.duckdns.org/key")
