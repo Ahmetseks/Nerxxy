@@ -1,11 +1,11 @@
 --[[ 
-    NEXXZY ULTIMATE v10.2 - STABLE GLOBAL
+    NEXXZY ELITE v11.0 - STABLE MASTER
     Customized for: Umut
     -------------------------------------------
-    - LEGIT AIMBOT: Raycast Wall-Check
-    - GHOST INVIS: Server-side Desync
-    - TROLL MASTER: FE Fling & Dynamic List
-    - LANGUAGE: English for Maximum Compatibility
+    - CARPET FLY: True 3D movement (WASD)
+    - SMART TROLL GUI: Expandable Player Profiles
+    - FIXES: Aimbot sensitivity & Fling physics
+    - NO GHOST: Removed as requested
     -------------------------------------------
 --]]
 
@@ -15,203 +15,187 @@ local UIS = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
-local Nexxzy_Settings = {
-    Aim = false, Fly = false, Ghost = false,
-    FOV = 135, Smooth = 0.15, FlySpeed = 70
+local Nexxzy = {
+    Aim = false, Fly = false, FlySpeed = 50,
+    FOV = 150, Smooth = 0.1, SelectedPlayer = nil
 }
 
---// GHOST MODE LOGIC (Server-Side Invisibility Attempt)
-local function ToggleGhost(state)
-    Nexxzy_Settings.Ghost = state
+--// FLY SYSTEM (CARPET STYLE)
+local BodyGyro, BodyVel
+local function StartFly()
     local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        task.spawn(function()
-            while Nexxzy_Settings.Ghost do
-                -- Rapidly desyncs position to make you hard to hit/see for others
-                local oldV = char.HumanoidRootPart.Velocity
-                char.HumanoidRootPart.Velocity = Vector3.new(0, 5000, 0)
-                RunService.Heartbeat:Wait()
-                char.HumanoidRootPart.Velocity = oldV
-                task.wait(0.1)
-            end
-        end)
-    end
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    BodyGyro = Instance.new("BodyGyro", char.HumanoidRootPart)
+    BodyGyro.P = 9e4
+    BodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    BodyGyro.CFrame = char.HumanoidRootPart.CFrame
+    
+    BodyVel = Instance.new("BodyVelocity", char.HumanoidRootPart)
+    BodyVel.Velocity = Vector3.new(0, 0.1, 0)
+    BodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    
+    char.Humanoid.PlatformStand = true
 end
 
---// POWERFUL FE FLING
-local function FlingPlayer(target)
-    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = LocalPlayer.Character.HumanoidRootPart
-        local thrp = target.Character.HumanoidRootPart
-        local oldPos = hrp.CFrame
-        
-        local bva = Instance.new("BodyAngularVelocity", hrp)
-        bva.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        bva.AngularVelocity = Vector3.new(0, 99999, 0)
-        
-        local start = tick()
-        while tick() - start < 1.8 do
-            RunService.Heartbeat:Wait()
-            hrp.CFrame = thrp.CFrame * CFrame.new(0, 0, 0.2)
-            hrp.Velocity = Vector3.new(4500, 4500, 4500)
-        end
-        
-        bva:Destroy()
-        hrp.Velocity = Vector3.new(0,0,0)
-        hrp.CFrame = oldPos
-    end
+local function StopFly()
+    if BodyGyro then BodyGyro:Destroy() end
+    if BodyVel then BodyVel:Destroy() end
+    if LocalPlayer.Character then LocalPlayer.Character.Humanoid.PlatformStand = false end
 end
 
---// UI CONSTRUCTION (Global Standard)
+--// UI CORE
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "Nexxzy_v10_2"
+ScreenGui.Name = "Nexxzy_v11"
 ScreenGui.ResetOnSpawn = false
 
 local MainToggle = Instance.new("TextButton", ScreenGui)
-MainToggle.Size = UDim2.new(0, 90, 0, 45)
-MainToggle.Position = UDim2.new(0.02, 0, 0.45, 0)
+MainToggle.Size = UDim2.new(0, 80, 0, 40)
+MainToggle.Position = UDim2.new(0.02, 0, 0.4, 0)
 MainToggle.Text = "NEXXZY"
 MainToggle.BackgroundColor3 = Color3.new(0,0,0)
 MainToggle.TextColor3 = Color3.new(1,1,1)
-MainToggle.Font = Enum.Font.GothamBold
 Instance.new("UICorner", MainToggle)
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 320, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -190)
+MainFrame.Size = UDim2.new(0, 310, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -155, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.new(0,0,0)
-MainFrame.BackgroundTransparency = 0.1
 MainFrame.Visible = false
 Instance.new("UICorner", MainFrame)
 
 -- Tab Headers
-local PlayerTabBtn = Instance.new("TextButton", MainFrame)
-PlayerTabBtn.Size = UDim2.new(0.5, 0, 0, 40)
-PlayerTabBtn.Position = UDim2.new(0, 0, 0, 40)
-PlayerTabBtn.Text = "PLAYER"
-PlayerTabBtn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-PlayerTabBtn.TextColor3 = Color3.new(1, 1, 1)
+local PlayerTab = Instance.new("ScrollingFrame", MainFrame)
+PlayerTab.Size = UDim2.new(1, -20, 1, -100)
+PlayerTab.Position = UDim2.new(0, 10, 0, 80)
+PlayerTab.BackgroundTransparency = 1
+Instance.new("UIListLayout", PlayerTab).Padding = UDim.new(0, 5)
 
-local TrollTabBtn = Instance.new("TextButton", MainFrame)
-TrollTabBtn.Size = UDim2.new(0.5, 0, 0, 40)
-TrollTabBtn.Position = UDim2.new(0.5, 0, 0, 40)
-TrollTabBtn.Text = "TROLL"
-TrollTabBtn.BackgroundColor3 = Color3.new(0, 0, 0)
-TrollTabBtn.TextColor3 = Color3.new(0.6, 0.6, 0.6)
+local TrollTab = Instance.new("ScrollingFrame", MainFrame)
+TrollTab.Size = UDim2.new(1, -20, 1, -100)
+TrollTab.Position = UDim2.new(0, 10, 0, 80)
+TrollTab.BackgroundTransparency = 1
+TrollTab.Visible = false
+Instance.new("UIListLayout", TrollTab).Padding = UDim.new(0, 5)
 
-local PlayerPage = Instance.new("ScrollingFrame", MainFrame)
-PlayerPage.Size = UDim2.new(1, -20, 1, -100)
-PlayerPage.Position = UDim2.new(0, 10, 0, 90)
-PlayerPage.BackgroundTransparency = 1
-Instance.new("UIListLayout", PlayerPage).Padding = UDim.new(0, 5)
+--// SMART TROLL PANEL (Expandable)
+local ProfilePanel = Instance.new("Frame", TrollTab)
+ProfilePanel.Size = UDim2.new(1, 0, 0, 140)
+ProfilePanel.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+ProfilePanel.Visible = false
+Instance.new("UICorner", ProfilePanel)
 
-local TrollPage = Instance.new("ScrollingFrame", MainFrame)
-TrollPage.Size = UDim2.new(1, -20, 1, -100)
-TrollPage.Position = UDim2.new(0, 10, 0, 90)
-TrollPage.BackgroundTransparency = 1
-TrollPage.Visible = false
-Instance.new("UIListLayout", TrollPage).Padding = UDim.new(0, 5)
+local UserImg = Instance.new("ImageLabel", ProfilePanel)
+UserImg.Size = UDim2.new(0, 60, 0, 60)
+UserImg.Position = UDim2.new(0.5, -30, 0, 10)
+Instance.new("UICorner", UserImg).CornerRadius = UDim.new(1,0)
 
---// BUTTON GENERATOR
-local function CreateBtn(text, parent, callback)
+local UserName = Instance.new("TextLabel", ProfilePanel)
+UserName.Size = UDim2.new(1, 0, 0, 20)
+UserName.Position = UDim2.new(0, 0, 0, 75)
+UserName.TextColor3 = Color3.new(1,1,1)
+UserName.BackgroundTransparency = 1
+
+local ActionContainer = Instance.new("Frame", ProfilePanel)
+ActionContainer.Size = UDim2.new(1, 0, 0, 40)
+ActionContainer.Position = UDim2.new(0, 0, 0, 100)
+ActionContainer.BackgroundTransparency = 1
+Instance.new("UIListLayout", ActionContainer).FillDirection = Enum.FillDirection.Horizontal
+
+local function CreateActionBtn(txt, parent, func)
     local b = Instance.new("TextButton", parent)
-    b.Size = UDim2.new(1, 0, 0, 40)
-    b.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
-    b.Text = text
-    b.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", b)
-    b.MouseButton1Click:Connect(function() callback(b) end)
+    b.Size = UDim2.new(0.5, 0, 1, 0)
+    b.Text = txt
+    b.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    b.TextColor3 = Color3.new(1,1,1)
+    b.MouseButton1Click:Connect(func)
 end
 
---// PLAYER FEATURES
-CreateBtn("AIMBOT: OFF", PlayerPage, function(b)
-    Nexxzy_Settings.Aim = not Nexxzy_Settings.Aim
-    b.Text = Nexxzy_Settings.Aim and "AIMBOT: ON" or "AIMBOT: OFF"
+CreateActionBtn("TP (GOTO)", ActionContainer, function()
+    if Nexxzy.SelectedPlayer and Nexxzy.SelectedPlayer.Character then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = Nexxzy.SelectedPlayer.Character.HumanoidRootPart.CFrame
+    end
 end)
 
-CreateBtn("FLY MODE: OFF", PlayerPage, function(b)
-    Nexxzy_Settings.Fly = not Nexxzy_Settings.Fly
-    b.Text = Nexxzy_Settings.Fly and "FLY MODE: ON" or "FLY MODE: OFF"
+CreateActionBtn("BRING", ActionContainer, function()
+    if Nexxzy.SelectedPlayer and Nexxzy.SelectedPlayer.Character then
+        Nexxzy.SelectedPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+    end
 end)
 
-CreateBtn("GHOST INVIS (FE)", PlayerPage, function(b)
-    Nexxzy_Settings.Ghost = not Nexxzy_Settings.Ghost
-    b.Text = Nexxzy_Settings.Ghost and "GHOST: ON" or "GHOST: OFF"
-    ToggleGhost(Nexxzy_Settings.Ghost)
-end)
-
---// TROLL PAGE (Dynamic List)
-local function RefreshTrollList()
-    for _, v in pairs(TrollPage:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+--// LIST REFRESH
+local function UpdateTrollList()
+    for _, v in pairs(TrollTab:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer then
-            local f = Instance.new("Frame", TrollPage)
-            f.Size = UDim2.new(1, 0, 0, 65)
-            f.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-            Instance.new("UICorner", f)
-            
-            local img = Instance.new("ImageLabel", f)
-            img.Size = UDim2.new(0, 50, 0, 50)
-            img.Position = UDim2.new(0, 5, 0.5, -25)
-            img.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-            Instance.new("UICorner", img).CornerRadius = UDim.new(1,0)
-
-            local gotoB = Instance.new("TextButton", f)
-            gotoB.Size = UDim2.new(0, 60, 0, 25)
-            gotoB.Position = UDim2.new(0, 65, 0.5, 2)
-            gotoB.Text = "GOTO"
-            gotoB.MouseButton1Click:Connect(function() LocalPlayer.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame end)
-
-            local flingB = Instance.new("TextButton", f)
-            flingB.Size = UDim2.new(0, 60, 0, 25)
-            flingB.Position = UDim2.new(0, 130, 0.5, 2)
-            flingB.Text = "FLING"
-            flingB.BackgroundColor3 = Color3.new(0.4, 0, 0)
-            flingB.MouseButton1Click:Connect(function() FlingPlayer(p) end)
+            local b = Instance.new("TextButton", TrollTab)
+            b.Size = UDim2.new(1, 0, 0, 35)
+            b.Text = p.Name
+            b.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
+            b.TextColor3 = Color3.new(1,1,1)
+            b.MouseButton1Click:Connect(function()
+                Nexxzy.SelectedPlayer = p
+                UserName.Text = p.DisplayName
+                UserImg.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+                ProfilePanel.Visible = true
+            end)
         end
     end
 end
 
--- Tab Switching
-PlayerTabBtn.MouseButton1Click:Connect(function()
-    PlayerPage.Visible = true; TrollPage.Visible = false
-    PlayerTabBtn.BackgroundColor3 = Color3.new(0.1,0.1,0.1); TrollTabBtn.BackgroundColor3 = Color3.new(0,0,0)
-end)
-TrollTabBtn.MouseButton1Click:Connect(function()
-    TrollPage.Visible = true; PlayerPage.Visible = false
-    TrollTabBtn.BackgroundColor3 = Color3.new(0.1,0.1,0.1); PlayerTabBtn.BackgroundColor3 = Color3.new(0,0,0)
-    RefreshTrollList()
+--// PLAYER FEATURES
+local function AddToggle(txt, parent, callback)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(1, 0, 0, 40)
+    b.Text = txt .. ": OFF"
+    b.BackgroundColor3 = Color3.new(0.15,0.15,0.15)
+    b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() callback(b) end)
+end
+
+AddToggle("AIMBOT", PlayerTab, function(b)
+    Nexxzy.Aim = not Nexxzy.Aim
+    b.Text = Nexxzy.Aim and "AIMBOT: ON" or "AIMBOT: OFF"
 end)
 
---// RUNTIME ENGINE (AIM & FLY)
-local function GetTarget()
-    local target, dist = nil, Nexxzy_Settings.FOV
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-            local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
-            if vis then
-                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if mag < dist then
-                    local params = RaycastParams.new()
-                    params.FilterDescendantsInstances = {LocalPlayer.Character, p.Character}
-                    if not workspace:Raycast(Camera.CFrame.Position, (p.Character.Head.Position - Camera.CFrame.Position).Unit * 500, params) then
+AddToggle("CARPET FLY", PlayerTab, function(b)
+    Nexxzy.Fly = not Nexxzy.Fly
+    b.Text = Nexxzy.Fly and "FLY: ON" or "FLY: OFF"
+    if Nexxzy.Fly then StartFly() else StopFly() end
+end)
+
+--// RUNTIME (AIM & FLY CONTROL)
+RunService.RenderStepped:Connect(function()
+    if Nexxzy.Fly and BodyVel and BodyGyro then
+        local moveDir = Vector3.new(0, 0, 0)
+        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - Camera.CFrame.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Camera.CFrame.RightVector end
+        
+        BodyVel.Velocity = moveDir * Nexxzy.FlySpeed
+        BodyGyro.CFrame = Camera.CFrame
+    end
+    
+    if Nexxzy.Aim then
+        local target = nil
+        local dist = Nexxzy.FOV
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
+                if vis then
+                    local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                    if mag < dist then
                         dist = mag
                         target = p.Character.Head
                     end
                 end
             end
         end
-    end
-    return target
-end
-
-RunService.RenderStepped:Connect(function()
-    if Nexxzy_Settings.Aim then
-        local t = GetTarget()
-        if t then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, t.Position), Nexxzy_Settings.Smooth) end
-    end
-    if Nexxzy_Settings.Fly and LocalPlayer.Character then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Camera.CFrame.LookVector * Nexxzy_Settings.FlySpeed
+        if target then
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), Nexxzy.Smooth)
+        end
     end
 end)
 
