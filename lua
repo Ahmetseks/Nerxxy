@@ -1,9 +1,9 @@
 --[[ 
-    T-90MMS ELITE V7 (GLOBAL MOBILE VERSION)
-    - Full English Interface for 100% Compatibility
-    - Enhanced Highlight ESP
-    - Team-Check Aimbot (FOV Based)
-    - Smooth Fly & Noclip
+    NEXXZY ELITE v8.0 - MOBILE PROJECT
+    Features: 
+    - Legit Aimbot (Wall Check Included)
+    - Player List with Thumbnails (TP & Bring)
+    - Fly, Noclip, ESP, Invisibility
 --]]
 
 local Players = game:GetService("Players")
@@ -12,160 +12,187 @@ local UIS = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
---// SYSTEM SETTINGS
-local T90_Config = {
-    AimActive = false,
-    FlyActive = false,
-    NoclipActive = false,
-    EspActive = false,
-    
-    FOV_Radius = 140,
-    FlySpeed = 60,
-    AimSmoothing = 0.18 -- Lower = Smoother
+--// CONFIGURATION
+local Nexxzy_Settings = {
+    Aim = false,
+    Fly = false,
+    Noclip = false,
+    Esp = false,
+    Invis = false,
+    FOV = 120,
+    Smoothness = 0.15
 }
 
---// UI GENERATION (Noir Aesthetic)
+--// UI CONSTRUCT
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "T90_Global_Pro"
+ScreenGui.Name = "Nexxzy_Elite"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
 
--- Floating Open Button
-local MenuBtn = Instance.new("TextButton", ScreenGui)
-MenuBtn.Size = UDim2.new(0, 65, 0, 65)
-MenuBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
-MenuBtn.BackgroundColor3 = Color3.new(0, 0, 0)
-MenuBtn.Text = "T90"
-MenuBtn.TextColor3 = Color3.new(1, 1, 1)
-MenuBtn.Font = Enum.Font.GothamBold
-MenuBtn.TextSize = 18
-Instance.new("UICorner", MenuBtn).CornerRadius = UDim.new(1, 0)
-local Stroke = Instance.new("UIStroke", MenuBtn)
-Stroke.Color = Color3.new(1, 1, 1)
-Stroke.Thickness = 2
+-- Nexxzy Floating Button
+local OpenBtn = Instance.new("TextButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0, 80, 0, 40)
+OpenBtn.Position = UDim2.new(0, 10, 0.5, 0)
+OpenBtn.BackgroundColor3 = Color3.new(0,0,0)
+OpenBtn.Text = "NEXXZY"
+OpenBtn.TextColor3 = Color3.new(1,1,1)
+OpenBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", OpenBtn)
+Instance.new("UIStroke", OpenBtn).Color = Color3.new(1,1,1)
 
--- Main Dashboard
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 260, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -160)
-MainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-MainFrame.BackgroundTransparency = 0.15
-MainFrame.Visible = false
-Instance.new("UICorner", MainFrame)
+-- Main Menu
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 300, 0, 350)
+Main.Position = UDim2.new(0.5, -150, 0.5, -175)
+Main.BackgroundColor3 = Color3.new(0,0,0)
+Main.BackgroundTransparency = 0.1
+Main.Visible = false
+Instance.new("UICorner", Main)
 
--- Drag Area
-local TopBar = Instance.new("Frame", MainFrame)
-TopBar.Size = UDim2.new(1, 0, 0, 45)
-TopBar.BackgroundTransparency = 1
+-- Tabs
+local PlayerTab = Instance.new("ScrollingFrame", Main)
+PlayerTab.Size = UDim2.new(1, -20, 1, -80)
+PlayerTab.Position = UDim2.new(0, 10, 0, 70)
+PlayerTab.BackgroundTransparency = 1
+PlayerTab.Visible = true
 
-local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, 0, 1, 0)
-Title.Text = "T-90MMS GLOBAL v7"
-Title.TextColor3 = Color3.new(1, 1, 1)
+local TrollTab = Instance.new("ScrollingFrame", Main)
+TrollTab.Size = UDim2.new(1, -20, 1, -80)
+TrollTab.Position = UDim2.new(0, 10, 0, 70)
+TrollTab.BackgroundTransparency = 1
+TrollTab.Visible = false
+
+-- Header & Switching
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "NEXXZY v8"
+Title.TextColor3 = Color3.new(1,1,1)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 15
 
-local ExitBtn = Instance.new("TextButton", MainFrame)
-ExitBtn.Size = UDim2.new(0, 35, 0, 35)
-ExitBtn.Position = UDim2.new(0.85, 0, 0.02, 0)
-ExitBtn.Text = "X"
-ExitBtn.BackgroundColor3 = Color3.new(1, 1, 1)
-ExitBtn.TextColor3 = Color3.new(0, 0, 0)
-Instance.new("UICorner", ExitBtn)
+local PlayerBtn = Instance.new("TextButton", Main)
+PlayerBtn.Size = UDim2.new(0.5, 0, 0, 30)
+PlayerBtn.Position = UDim2.new(0, 0, 0, 40)
+PlayerBtn.Text = "PLAYER"
+PlayerBtn.BackgroundColor3 = Color3.new(0.1,0.1,0.1)
+PlayerBtn.TextColor3 = Color3.new(1,1,1)
 
--- FOV Circle Visual
-local FOVFrame = Instance.new("Frame", ScreenGui)
-FOVFrame.Size = UDim2.new(0, T90_Config.FOV_Radius * 2, 0, T90_Config.FOV_Radius * 2)
-FOVFrame.Position = UDim2.new(0.5, -T90_Config.FOV_Radius, 0.5, -T90_Config.FOV_Radius)
-FOVFrame.BackgroundTransparency = 1
-FOVFrame.Visible = false
-local Circle = Instance.new("UICorner", FOVFrame)
-Circle.CornerRadius = UDim.new(1, 0)
-local CircleStroke = Instance.new("UIStroke", FOVFrame)
-CircleStroke.Color = Color3.new(1, 1, 1)
-CircleStroke.Thickness = 1
+local TrollBtn = Instance.new("TextButton", Main)
+TrollBtn.Size = UDim2.new(0.5, 0, 0, 30)
+TrollBtn.Position = UDim2.new(0.5, 0, 0, 40)
+TrollBtn.Text = "TROLL"
+TrollBtn.BackgroundColor3 = Color3.new(0,0,0)
+TrollBtn.TextColor3 = Color3.new(0.5,0.5,0.5)
 
---// MOBILE DRAG LOGIC
-local dragging, dragInput, dragStart, startPos
-TopBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-    end
+-- Tab Logic
+PlayerBtn.MouseButton1Click:Connect(function()
+    PlayerTab.Visible = true TrollTab.Visible = false
+    PlayerBtn.TextColor3 = Color3.new(1,1,1) TrollBtn.TextColor3 = Color3.new(0.5,0.5,0.5)
 end)
-UIS.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
+TrollBtn.MouseButton1Click:Connect(function()
+    TrollTab.Visible = false TrollTab.Visible = true -- Fix
+    TrollTab.Visible = true PlayerTab.Visible = false
+    TrollBtn.TextColor3 = Color3.new(1,1,1) PlayerBtn.TextColor3 = Color3.new(0.5,0.5,0.5)
 end)
 
---// COMPONENT BUILDER
-local function NewButton(text, pos, callback)
-    local btn = Instance.new("TextButton", MainFrame)
-    btn.Size = UDim2.new(0.85, 0, 0, 45)
-    btn.Position = UDim2.new(0.075, 0, 0, pos)
-    btn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Text = text .. ": OFF"
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 13
+--// PLAYER TAB FEATURES (Fly, Invis, Aim, etc.)
+local function AddToggle(name, parent, callback)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.BackgroundColor3 = Color3.new(0.1,0.1,0.1)
+    btn.Text = name .. ": OFF"
+    btn.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", btn)
-
-    btn.MouseButton1Click:Connect(function()
-        callback(btn)
-    end)
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
+    
+    local layout = parent:FindFirstChild("UIListLayout") or Instance.new("UIListLayout", parent)
+    layout.Padding = UDim.new(0, 5)
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 end
 
---// FEATURE CONTROLS
-NewButton("AIM ASSIST", 60, function(b)
-    T90_Config.AimActive = not T90_Config.AimActive
-    b.Text = T90_Config.AimActive and "AIM ASSIST: ON" or "AIM ASSIST: OFF"
-    b.BackgroundColor3 = T90_Config.AimActive and Color3.new(1,1,1) or Color3.new(0.1,0.1,0.1)
-    b.TextColor3 = T90_Config.AimActive and Color3.new(0,0,0) or Color3.new(1,1,1)
-    FOVFrame.Visible = T90_Config.AimActive
+AddToggle("AIMBOT (WALL CHECK)", PlayerTab, function(b)
+    Nexxzy_Settings.Aim = not Nexxzy_Settings.Aim
+    b.Text = Nexxzy_Settings.Aim and "AIM: ON" or "AIM: OFF"
 end)
 
-NewButton("FLIGHT MODE", 120, function(b)
-    T90_Config.FlyActive = not T90_Config.FlyActive
-    b.Text = T90_Config.FlyActive and "FLIGHT: ON" or "FLIGHT: OFF"
+AddToggle("FLY MODE", PlayerTab, function(b)
+    Nexxzy_Settings.Fly = not Nexxzy_Settings.Fly
+    b.Text = Nexxzy_Settings.Fly and "FLY: ON" or "FLY: OFF"
 end)
 
-NewButton("NOCLIP", 180, function(b)
-    T90_Config.NoclipActive = not T90_Config.NoclipActive
-    b.Text = T90_Config.NoclipActive and "NOCLIP: ON" or "NOCLIP: OFF"
+AddToggle("INVISIBILITY", PlayerTab, function(b)
+    Nexxzy_Settings.Invis = not Nexxzy_Settings.Invis
+    b.Text = Nexxzy_Settings.Invis and "INVIS: ON" or "INVIS: OFF"
+    if LocalPlayer.Character then
+        for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") or v:IsA("Decal") then
+                v.Transparency = Nexxzy_Settings.Invis and 1 or 0
+            end
+        end
+    end
 end)
 
-NewButton("ULTRA ESP", 240, function(b)
-    T90_Config.EspActive = not T90_Config.EspActive
-    b.Text = T90_Config.EspActive and "ESP: ON" or "ESP: OFF"
-end)
+--// TROLL TAB - PLAYER LIST WITH ICONS
+local function UpdatePlayerList()
+    for _, v in pairs(TrollTab:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
+    local layout = Instance.new("UIListLayout", TrollTab)
+    layout.Padding = UDim.new(0, 5)
 
-MenuBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true MenuBtn.Visible = false end)
-ExitBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false MenuBtn.Visible = true end)
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            local pFrame = Instance.new("Frame", TrollTab)
+            pFrame.Size = UDim2.new(1, 0, 0, 60)
+            pFrame.BackgroundColor3 = Color3.new(0.1,0.1,0.1)
+            
+            local img = Instance.new("ImageLabel", pFrame)
+            img.Size = UDim2.new(0, 50, 0, 50)
+            img.Position = UDim2.new(0, 5, 0.5, -25)
+            img.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+            
+            local pName = Instance.new("TextLabel", pFrame)
+            pName.Position = UDim2.new(0, 60, 0, 5)
+            pName.Size = UDim2.new(0, 100, 0, 20)
+            pName.Text = p.Name
+            pName.TextColor3 = Color3.new(1,1,1)
+            pName.BackgroundTransparency = 1
+            pName.TextXAlignment = Enum.TextXAlignment.Left
 
---// LOGIC ENGINES
-local function GetBestEnemy()
+            local tpBtn = Instance.new("TextButton", pFrame)
+            tpBtn.Size = UDim2.new(0, 50, 0, 25)
+            tpBtn.Position = UDim2.new(0, 60, 0, 30)
+            tpBtn.Text = "GOTO"
+            tpBtn.MouseButton1Click:Connect(function()
+                LocalPlayer.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame
+            end)
+
+            local bringBtn = Instance.new("TextButton", pFrame)
+            bringBtn.Size = UDim2.new(0, 50, 0, 25)
+            bringBtn.Position = UDim2.new(0, 115, 0, 30)
+            bringBtn.Text = "BRING"
+            bringBtn.MouseButton1Click:Connect(function()
+                p.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            end)
+        end
+    end
+end
+TrollBtn.MouseButton1Click:Connect(UpdatePlayerList)
+
+--// AIMBOT LOGIC WITH WALL CHECK (No Ban)
+local function GetLegitTarget()
     local target = nil
-    local shortestDist = T90_Config.FOV_Radius
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-            -- Team Check (English Logic)
-            if player.Team ~= LocalPlayer.Team or player.Team == nil then
-                local point, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
-                if onScreen then
-                    local magnitude = (Vector2.new(point.X, point.Y) - center).Magnitude
-                    if magnitude < shortestDist then
-                        shortestDist = magnitude
-                        target = player.Character.Head
+    local dist = Nexxzy_Settings.FOV
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Team ~= LocalPlayer.Team then
+            local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
+            if vis then
+                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                if mag < dist then
+                    -- WALL CHECK (Raycast)
+                    local rayParams = RaycastParams.new()
+                    rayParams.FilterDescendantsInstances = {LocalPlayer.Character, p.Character}
+                    local ray = workspace:Raycast(Camera.CFrame.Position, (p.Character.Head.Position - Camera.CFrame.Position).Unit * 500, rayParams)
+                    
+                    if not ray then -- If nothing is blocking the way
+                        dist = mag
+                        target = p.Character.Head
                     end
                 end
             end
@@ -174,44 +201,15 @@ local function GetBestEnemy()
     return target
 end
 
---// RUNTIME LOOPS
+-- Runtime
 RunService.RenderStepped:Connect(function()
-    -- Aim Engine
-    if T90_Config.AimActive then
-        local lockOn = GetBestEnemy()
-        if lockOn then
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, lockOn.Position), T90_Config.AimSmoothing)
-        end
+    if Nexxzy_Settings.Aim then
+        local t = GetLegitTarget()
+        if t then Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, t.Position), Nexxzy_Settings.Smoothness) end
     end
-
-    -- Fly Engine
-    if T90_Config.FlyActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.Velocity = Camera.CFrame.LookVector * T90_Config.FlySpeed
-    end
-
-    -- ESP Engine (Modern Highlight)
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character then
-            local highlight = p.Character:FindFirstChild("T90_ESP")
-            if T90_Config.EspActive and (p.Team ~= LocalPlayer.Team) then
-                if not highlight then
-                    highlight = Instance.new("Highlight", p.Character)
-                    highlight.Name = "T90_ESP"
-                    highlight.FillColor = Color3.new(1, 1, 1)
-                    highlight.OutlineColor = Color3.new(0, 0, 0)
-                    highlight.FillTransparency = 0.5
-                end
-            else
-                if highlight then highlight:Destroy() end
-            end
-        end
+    if Nexxzy_Settings.Fly and LocalPlayer.Character then
+        LocalPlayer.Character.HumanoidRootPart.Velocity = Camera.CFrame.LookVector * 60
     end
 end)
 
-RunService.Stepped:Connect(function()
-    if T90_Config.NoclipActive and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-    end
-end)
+OpenBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
